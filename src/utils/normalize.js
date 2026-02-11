@@ -1,0 +1,2 @@
+// Test cleanup helpers. IM not sure if we will need this but it might be useful for cleaning up the DOM after running tests. W
+// e can use this to remove any elements that we have added to the DOM during our tests. This will help keep our tests clean and prevent any side effects from affecting other tests.
