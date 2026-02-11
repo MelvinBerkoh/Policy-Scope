@@ -1,0 +1,2 @@
+// Chrome extension configuration, with permission and content script injections files.
+// This is needed by chrome and it acts as the "entry point" for the extension. 
