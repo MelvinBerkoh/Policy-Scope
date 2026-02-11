@@ -1,0 +1,2 @@
+// This file should just receive the detections group by clauses type and school-to highlight behavior. The UI should stay separate from page logic.
+// This is going to be the main entry point for the popup script and it will be responsible for rendering the results of the detections and allowing the user to interact with the extension.
