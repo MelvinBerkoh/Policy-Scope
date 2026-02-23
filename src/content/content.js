@@ -1,3 +1,5 @@
 // This will be the main file for the content script. This is where we will be importing the parser, detector, and highlighter modules and then running the main logic of the extension.
 // It will call parser run detector, trigger the highlighting and send the results to the popup. 
 // This is going to be the main entry point for the content script and it will be responsible for orchestrating the different modules and making sure that everything runs smoothly.
+
+console.log("PolicyScope content script loaded");
