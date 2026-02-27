@@ -68,8 +68,8 @@ function getTextBlocks() {
          * Ignore structural / UI tags.
          *
          * Why?
-         * - We don’t want nav bars, footers, scripts, buttons.
-         * - These contain noise and not agreement language.
+         * We don’t want nav bars, footers, scripts, buttons.
+         * These contain noise and not agreement language.
          */
         const ignoredTags = [
           "SCRIPT",
@@ -89,8 +89,8 @@ function getTextBlocks() {
          * Ignore hidden elements.
          *
          * Why?
-         * - Some pages preload hidden templates.
-         * - We only care about what the user can actually see.
+         * Some pages preload hidden templates.
+         * We only care about what the user can actually see.
          */
         const style = window.getComputedStyle(parent);
         if (style.display === "none" || style.visibility === "hidden") {
@@ -140,3 +140,5 @@ console.log(blocks);
  * Next step (future):
  * blocks -> Detection Engine ->Highlighter
  */
+
+
