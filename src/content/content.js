@@ -128,17 +128,104 @@ const blocks = getTextBlocks();
 console.log(`Extracted ${blocks.length} text blocks`);
 console.log(blocks);
 
-/**
- * Summary of Current Architecture Layer:
+// The following should be an example of how  we can start parsing for things
+
+// Billing detection
+
+f/**
+ * detectClauses()
  *
- * Chrome Runtime
- *     |
- * Content Script (this file)
- *     |
- * getTextBlocks()  -> returns structured data
+ * Purpose:
+ * Classify extracted text blocks into important policy categories
+ * using rule-based pattern matching.
  *
- * Next step (future):
- * blocks -> Detection Engine ->Highlighter
+ * Categories we currently support:
+ * - Billing and auto-renewal terms
+ * - Subscription and refund conditions
+ * - Data collection practices
+ * - Data sharing with third parties
+ *
+ * NOTE ABOUT ARBITRATION / LEGAL LIMITATION CLAUSES:
+ * Arbitration clauses are much harder to detect with simple keyword
+ * patterns because the legal language varies significantly across sites.
+ * Phrases like "binding arbitration", "waive your right to a jury trial",
+ * or "limitation of liability" may appear in many different forms.
+ *
+ * For the MVP we may start with a few basic keywords, but this category
+ * will likely require more advanced pattern logic or contextual analysis
+ * later in the project.
  */
+
+function detectClauses(blocks) {
+
+  const patterns = {
+    billing_auto_renewal: [
+      /auto[- ]?renew/i,
+      /automatic renewal/i,
+      /recurring charge/i,
+      /billed (monthly|annually)/i,
+      /subscription fee/i
+    ],
+
+    subscription_refund: [
+      /refund/i,
+      /cancel(ation)? policy/i,
+      /subscription terms/i,
+      /trial period/i,
+      /money[- ]?back/i
+    ],
+
+    data_collection: [
+      /collect(ion)? of (your )?data/i,
+      /information we collect/i,
+      /personal information/i,
+      /data we gather/i
+    ],
+
+    data_sharing: [
+      /third[- ]party/i,
+      /share your data/i,
+      /partners and affiliates/i,
+      /service providers/i
+    ],
+
+    // Harder category – only very basic indicators for now (prob going to expand on this later)
+    arbitration_legal: [
+      /binding arbitration/i,
+      /waive your right/i,
+      /jury trial/i,
+      /limitation of liability/i,
+      /dispute resolution/i
+    ]
+  };
+
+  const results = [];
+
+  blocks.forEach(block => {
+    const text = block.text;
+
+    for (const [type, regexList] of Object.entries(patterns)) {
+
+      const match = regexList.some(pattern => pattern.test(text));
+
+      if (match) {
+        results.push({
+          type: type,
+          text: block.text,
+          node: block.node
+        });
+
+        // stop checking other categories once matched
+        break;
+      }
+    }
+  });
+
+  return results;
+}
+
+const detectedClauses = detectClauses(blocks);
+
+console.log("Detected Clauses:", detectedClauses);
 
 
