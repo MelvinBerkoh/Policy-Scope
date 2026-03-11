@@ -132,7 +132,7 @@ console.log(blocks);
 
 // Billing detection
 
-f/**
+/**
  * detectClauses()
  *
  * Purpose:
@@ -227,5 +227,13 @@ function detectClauses(blocks) {
 const detectedClauses = detectClauses(blocks);
 
 console.log("Detected Clauses:", detectedClauses);
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
+  if (request.action === "getDetections") {
+    sendResponse({ data: detectedClauses });
+  }
+
+});
 
 

@@ -1,2 +1,37 @@
 /* Basic styling sheets for the popup HTML interface of the extension. for the people working on this please use classes and ids that are descriptive to what they do. */
 /* This will help with visual clarity and non clashing styles. */
+
+body {
+  font-family: Arial, sans-serif;
+  width: 300px;
+  padding: 15px;
+  background: #f7f7f7;
+}
+
+h1 {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.result-item {
+  background: white;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border-left: 4px solid #4CAF50;
+}
+
+.result-title {
+  font-weight: bold;
+}
+
+.result-count {
+  font-size: 14px;
+  color: #444;
+}
