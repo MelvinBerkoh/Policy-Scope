@@ -1,37 +1,120 @@
-/* Basic styling sheets for the popup HTML interface of the extension. for the people working on this please use classes and ids that are descriptive to what they do. */
-/* This will help with visual clarity and non clashing styles. */
-
 body {
   font-family: Arial, sans-serif;
   width: 300px;
-  padding: 15px;
-  background: #f7f7f7;
+  padding: 12px;
+  background: #f9f9f9;
+  margin: 0;
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-left: 6px solid #ccc;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.type {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.count {
+  background: #222;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.detailsBtn {
+  margin-top: 6px;
+  width: 100%;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.detailsBtn:hover {
+  background: #4338ca;
+}
+
+/* Footer buttons */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.footer button {
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#optionsBtn {
+  background: #e5e7eb;
+}
+
+#toggleHighlight {
+  background: #4f46e5;
+  color: white;
+}
+
+/* Details view */
+.detailCard {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.original {
+  font-weight: bold;
   margin-bottom: 5px;
 }
 
-.subtitle {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 15px;
+.summary {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
 }
 
-.result-item {
-  background: white;
-  padding: 10px;
-  margin-bottom: 8px;
+.locateBtn {
+  border: none;
+  background: #10b981;
+  color: white;
+  padding: 5px 8px;
   border-radius: 6px;
-  border-left: 4px solid #4CAF50;
+  cursor: pointer;
 }
 
-.result-title {
-  font-weight: bold;
+.locateBtn:hover {
+  background: #059669;
 }
 
-.result-count {
-  font-size: 14px;
-  color: #444;
+#backBtn {
+  margin-bottom: 10px;
+  border: none;
+  background: #ddd;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
 }

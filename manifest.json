@@ -9,20 +9,32 @@
     "scripting",
     "storage"
   ],
+  "externally_connectable": {
+  "matches": ["http://localhost:3000/*"]
+},
+  "background": {
+  "service_worker": "background.js"},
 
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "http://localhost:3000/*"
   ],
 
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_title": "PolicyScope"
   },
+  "content_security_policy": {
+  "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://localhost:3000"
+},
 
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["src/content/content.js"],
+      "js": [
+        "src/content/highlighter.js",
+        "src/content/content.js"
+      ],
       "run_at": "document_idle"
     }
   ]
