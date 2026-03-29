@@ -17,7 +17,31 @@ function truncateText(text, maxLength = 140) {
   return text.slice(0, maxLength).trim() + "...";
 }
 
+const labelMap = {
+  data_collection: "Data Collection",
+  data_sharing: "Data Sharing",
+  tracking_cookies: "Tracking & Cookies",
+  data_retention: "Data Retention",
+  sensitive_data: "Sensitive Data",
+
+  subscription_billing: "Subscription & Billing",
+  cancellation_refunds: "Cancellation & Refunds",
+  price_changes: "Price Changes",
+
+  liability_limits: "Liability Limits",
+  arbitration_disputes: "Dispute Resolution",
+  terms_changes: "Terms Changes",
+
+  account_termination: "Account Termination",
+  third_party_services: "Third-Party Services",
+  user_content_license: "User Content Rights",
+  marketing_communications: "Marketing Communications",
+
+  age_restrictions: "Age Restrictions"
+};
 function formatLabel(type) {
+  if (labelMap[type]) return labelMap[type];
+
   return type
     .replaceAll("_", " ")
     .replace(/\b\w/g, c => c.toUpperCase());
@@ -28,12 +52,27 @@ function renderMain(grouped) {
   results.innerHTML = "";
 
   const colors = {
-    billing_auto_renewal: "#f59e0b",
-    subscription_refund: "#fb923c",
-    data_collection: "#22c55e",
-    data_sharing: "#6366f1",
-    arbitration_legal: "#ef4444"
-  };
+  data_collection: "#22c55e",
+  data_sharing: "#22c55e",
+  tracking_cookies: "#22c55e",
+  data_retention: "#22c55e",
+  sensitive_data: "#22c55e",
+
+  subscription_billing: "#f59e0b",
+  cancellation_refunds: "#f59e0b",
+  price_changes: "#f59e0b",
+
+  liability_limits: "#ef4444",
+  arbitration_disputes: "#ef4444",
+  terms_changes: "#ef4444",
+
+  account_termination: "#6366f1",
+  third_party_services: "#6366f1",
+  user_content_license: "#6366f1",
+  marketing_communications: "#6366f1",
+
+  age_restrictions: "#eab308"
+};
 
   Object.entries(grouped).forEach(([type, items]) => {
     const div = document.createElement("div");

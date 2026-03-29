@@ -7,14 +7,29 @@ function escapeRegExp(string) {
 
 function getBorderColor(type) {
   const borderColors = {
-    billing_auto_renewal: "#f59e0b",
-    subscription_refund: "#fb923c",
     data_collection: "#22c55e",
-    data_sharing: "#6366f1",
-    arbitration_legal: "#ef4444"
+    data_sharing: "#22c55e",
+    tracking_cookies: "#22c55e",
+    data_retention: "#22c55e",
+    sensitive_data: "#22c55e",
+
+    subscription_billing: "#f59e0b",
+    cancellation_refunds: "#f59e0b",
+    price_changes: "#f59e0b",
+
+    liability_limits: "#ef4444",
+    arbitration_disputes: "#ef4444",
+    terms_changes: "#ef4444",
+
+    account_termination: "#6366f1",
+    third_party_services: "#6366f1",
+    user_content_license: "#6366f1",
+    marketing_communications: "#6366f1",
+
+    age_restrictions: "#eab308"
   };
 
-  return borderColors[type] || "#facc15";
+  return borderColors[type] || "#94a3b8";
 }
 
 function applyHighlightStyles(span, borderColor, type) {
