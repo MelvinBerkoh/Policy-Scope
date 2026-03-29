@@ -1,8 +1,5 @@
 let globalDetections = [];
 
-/**
- * Group detections by type
- */
 function groupByType(detections) {
   const grouped = {};
 
@@ -14,35 +11,38 @@ function groupByType(detections) {
   return grouped;
 }
 
-/**
- * Render main category view
- */
+function truncateText(text, maxLength = 140) {
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength).trim() + "...";
+}
+
+function formatLabel(type) {
+  return type
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function renderMain(grouped) {
   const results = document.getElementById("results");
   results.innerHTML = "";
 
   const colors = {
-    billing_auto_renewal: "#fff3a0",
-    subscription_refund: "#ffd6a5",
-    data_collection: "#caffbf",
-    data_sharing: "#bdb2ff",
-    arbitration_legal: "#ffadad"
+    billing_auto_renewal: "#f59e0b",
+    subscription_refund: "#fb923c",
+    data_collection: "#22c55e",
+    data_sharing: "#6366f1",
+    arbitration_legal: "#ef4444"
   };
 
   Object.entries(grouped).forEach(([type, items]) => {
-
     const div = document.createElement("div");
     div.className = "card";
-
-    div.style.borderLeft = `6px solid ${colors[type] || "#ccc"}`;
-
-    const label = type
-      .replaceAll("_", " ")
-      .replace(/\b\w/g, c => c.toUpperCase());
+    div.style.borderLeft = `6px solid ${colors[type] || "#d1d5db"}`;
 
     div.innerHTML = `
       <div class="row">
-        <span class="type">${label}</span>
+        <span class="type">${formatLabel(type)}</span>
         <span class="count">${items.length}</span>
       </div>
       <button class="detailsBtn">Details</button>
@@ -56,51 +56,73 @@ function renderMain(grouped) {
   });
 }
 
-/**
- * Show details view (AI + original text)
- */
 function showDetails(type, items) {
-
-  document.getElementById("mainView").style.display = "none";
-  document.getElementById("detailsView").style.display = "block";
-
-  document.getElementById("detailTitle").innerText =
-    type.replaceAll("_", " ").toUpperCase();
-
+  const mainView = document.getElementById("mainView");
+  const detailsView = document.getElementById("detailsView");
+  const detailTitle = document.getElementById("detailTitle");
   const container = document.getElementById("detailContent");
+
+  if (!mainView || !detailsView || !detailTitle || !container) {
+    console.error("Popup view elements are missing");
+    return;
+  }
+
+  mainView.style.display = "none";
+  detailsView.style.display = "block";
+  detailTitle.innerText = formatLabel(type).toUpperCase();
+
   container.innerHTML = "";
 
   items.forEach(item => {
-
     const div = document.createElement("div");
     div.className = "detailCard";
 
     div.innerHTML = `
-      <div class="original">${item.text}</div>
-      <div class="summary">Loading AI summary...</div>
-      <button class="locateBtn">🔍 Find</button>
+      <div class="original shortText">${truncateText(item.text, 170)}</div>
+      <div class="fullText">${item.text}</div>
+      <div class="summary">${truncateText(item.text, 90)}</div>
+      <div class="detailActions">
+        <button class="expandBtn">Expand</button>
+        <button class="locateBtn">Find</button>
+      </div>
     `;
 
-    // 🔥 AI CALL (background.js handles this)
+    const summaryEl = div.querySelector(".summary");
+    const shortEl = div.querySelector(".shortText");
+    const fullEl = div.querySelector(".fullText");
+    const expandBtn = div.querySelector(".expandBtn");
+    const locateBtn = div.querySelector(".locateBtn");
+
     chrome.runtime.sendMessage(
       {
         action: "analyzeClause",
         text: item.text
       },
       res => {
-        const summaryEl = div.querySelector(".summary");
+        if (chrome.runtime.lastError) {
+          summaryEl.innerText = "Unable to load summary";
+          return;
+        }
 
         if (res && res.summary) {
-          summaryEl.innerText = res.summary;
+          summaryEl.innerText = truncateText(res.summary, 120);
         } else {
-          summaryEl.innerText = "NO response from AI";
+          summaryEl.innerText = "No response from AI";
         }
       }
     );
 
-    // 🔍 Scroll to clause
-    div.querySelector(".locateBtn").onclick = () => {
+    expandBtn.onclick = () => {
+      const showingFull = fullEl.style.display === "block";
+      fullEl.style.display = showingFull ? "none" : "block";
+      shortEl.style.display = showingFull ? "block" : "none";
+      expandBtn.innerText = showingFull ? "Expand" : "Collapse";
+    };
+
+    locateBtn.onclick = () => {
       chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        if (!tabs[0]?.id) return;
+
         chrome.tabs.sendMessage(tabs[0].id, {
           action: "scrollToClause",
           text: item.text
@@ -112,13 +134,8 @@ function showDetails(type, items) {
   });
 }
 
-/**
- * Fetch detections from content script
- */
 function fetchDetections(retries = 8) {
-
   chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-
     if (!tabs[0]?.id) {
       console.log("No active tab");
       return;
@@ -128,7 +145,6 @@ function fetchDetections(retries = 8) {
       tabs[0].id,
       { action: "getDetections" },
       res => {
-
         if (chrome.runtime.lastError) {
           if (retries > 0) {
             return setTimeout(() => fetchDetections(retries - 1), 400);
@@ -145,10 +161,7 @@ function fetchDetections(retries = 8) {
           return;
         }
 
-        console.log("Detections received:", res.data);
-
         globalDetections = res.data;
-
         const grouped = groupByType(globalDetections);
         renderMain(grouped);
       }
@@ -158,28 +171,26 @@ function fetchDetections(retries = 8) {
 
 fetchDetections();
 
-/**
- * Toggle highlight button
- */
 document.getElementById("toggleHighlight").onclick = () => {
   chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+    if (!tabs[0]?.id) return;
+
     chrome.tabs.sendMessage(tabs[0].id, {
       action: "toggleHighlight"
     });
   });
 };
 
-/**
- * Back button (details → main)
- */
 document.getElementById("backBtn").onclick = () => {
-  document.getElementById("mainView").style.display = "block";
-  document.getElementById("detailsView").style.display = "none";
+  const mainView = document.getElementById("mainView");
+  const detailsView = document.getElementById("detailsView");
+
+  if (!mainView || !detailsView) return;
+
+  mainView.style.display = "block";
+  detailsView.style.display = "none";
 };
 
-/**
- * Options button (placeholder)
- */
 document.getElementById("optionsBtn").onclick = () => {
   alert("Settings coming soon");
 };

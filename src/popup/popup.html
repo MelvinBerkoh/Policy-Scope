@@ -11,18 +11,22 @@
   </head>
   <body>
     <div id="mainView">
-      <h1>PolicyScope</h1>
+      <div class="header">
+        <h1>PolicyScope</h1>
+      </div>
 
       <div id="results"></div>
 
       <div class="footer">
-        <button id="optionsBtn">Options</button>
-        <button id="toggleHighlight">Toggle Highlight</button>
+        <button id="optionsBtn" class="secondaryBtn">Options</button>
+        <button id="toggleHighlight" class="primaryBtn">
+          Toggle Highlight
+        </button>
       </div>
     </div>
 
     <div id="detailsView" style="display: none">
-      <button id="backBtn">← Back</button>
+      <button id="backBtn" class="secondaryBtn">Back</button>
       <h2 id="detailTitle"></h2>
       <div id="detailContent"></div>
     </div>

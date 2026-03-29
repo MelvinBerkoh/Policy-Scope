@@ -15,8 +15,8 @@ function getTextBlocks() {
         if (!text || text.length < 40) return NodeFilter.FILTER_REJECT;
 
         const ignoredTags = [
-          "SCRIPT","STYLE","NOSCRIPT",
-          "NAV","FOOTER","HEADER","BUTTON"
+          "SCRIPT", "STYLE", "NOSCRIPT",
+          "NAV", "FOOTER", "HEADER", "BUTTON"
         ];
 
         if (ignoredTags.includes(parent.tagName)) {
@@ -43,24 +43,38 @@ function getTextBlocks() {
   return blocks;
 }
 
+function splitIntoSentences(text) {
+  const matches = text.match(/[^.!?]+[.!?]?/g);
+  return matches ? matches.map(s => s.trim()).filter(Boolean) : [text];
+}
+
 function detectClauses(blocks) {
   const patterns = {
     billing_auto_renewal: [/auto[- ]?renew/i, /recurring/i],
     subscription_refund: [/refund/i, /cancel/i],
     data_collection: [/collect/i],
-    data_sharing: [/third[- ]party/i, /share/i],
+    data_sharing: [/third[- ]?party/i, /share/i],
     arbitration_legal: [/arbitration/i, /liability/i]
   };
 
   const results = [];
 
   blocks.forEach(block => {
-    for (const [type, list] of Object.entries(patterns)) {
-      if (list.some(p => p.test(block.text))) {
-        results.push({ type, text: block.text, node: block.node });
-        break;
+    const sentences = splitIntoSentences(block.text);
+
+    sentences.forEach(sentence => {
+      for (const [type, list] of Object.entries(patterns)) {
+        if (list.some(p => p.test(sentence))) {
+          results.push({
+            type,
+            text: sentence,
+            node: block.node,
+            highlightElement: null
+          });
+          break;
+        }
       }
-    }
+    });
   });
 
   return results;
@@ -71,54 +85,51 @@ const detectedClauses = detectClauses(blocks);
 
 console.log("Detected Clauses:", detectedClauses);
 
-/**
- * Toggle highlight ON/OFF properly
- */
 function toggleHighlights() {
-
   if (!window.highlightedSpans || window.highlightedSpans.length === 0) {
     console.log("No highlights to toggle");
     return;
   }
 
-  const isCurrentlyHidden =
-    window.highlightedSpans[0].style.backgroundColor === "transparent";
+  window.highlightsVisible = !window.highlightsVisible;
 
   window.highlightedSpans.forEach(span => {
-    span.style.backgroundColor = isCurrentlyHidden
-      ? span.dataset.originalColor
+    span.style.borderBottomColor = window.highlightsVisible
+      ? span.dataset.originalBorderColor
       : "transparent";
+    span.style.backgroundColor = "transparent";
   });
 }
 
-/**
- * INITIAL RENDER
- */
 highlightClauses(detectedClauses);
-createPolicyScopeBadge(detectedClauses.length, detectedClauses);
+createPolicyScopeBadge(detectedClauses.length);
 
-/**
- * SINGLE CLEAN MESSAGE LISTENER
- */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
   if (request.action === "getDetections") {
-    sendResponse({ data: detectedClauses });
+    sendResponse({
+      data: detectedClauses.map(({ type, text }) => ({ type, text }))
+    });
     return;
   }
 
   if (request.action === "scrollToClause") {
     const match = detectedClauses.find(c => c.text === request.text);
-    match?.node?.parentElement?.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
+
+    if (match?.highlightElement) {
+      match.highlightElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    } else if (match?.node?.parentElement) {
+      match.node.parentElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+
     return;
   }
 
-  /**
-   * ✅ IMPORTANT: AI now goes through background.js
-   */
   if (request.action === "analyzeClause") {
     chrome.runtime.sendMessage(
       {
@@ -133,7 +144,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === "toggleHighlight") {
-    console.log("Toggling highlights");
     toggleHighlights();
     return;
   }

@@ -1,29 +1,40 @@
 body {
   font-family: Arial, sans-serif;
-  width: 300px;
-  padding: 12px;
-  background: #f9f9f9;
+  width: 320px;
+  padding: 14px;
+  background: #f6f7fb;
   margin: 0;
+  color: #111827;
 }
 
 h1 {
   font-size: 18px;
-  margin-bottom: 12px;
+  margin: 0 0 12px;
+}
+
+h2 {
+  font-size: 16px;
+  margin: 12px 0 14px;
+  letter-spacing: 0.04em;
+}
+
+.header {
+  margin-bottom: 10px;
 }
 
 .card {
-  background: white;
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  border-left: 6px solid #ccc;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
 .type {
@@ -32,89 +43,108 @@ h1 {
 }
 
 .count {
-  background: #222;
+  background: #1f2937;
   color: white;
-  border-radius: 12px;
-  padding: 2px 8px;
+  border-radius: 999px;
+  padding: 2px 9px;
   font-size: 12px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.detailsBtn,
+.primaryBtn,
+.secondaryBtn,
+.locateBtn,
+.expandBtn {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 .detailsBtn {
-  margin-top: 6px;
+  margin-top: 8px;
   width: 100%;
-  border: none;
   background: #4f46e5;
   color: white;
-  padding: 6px;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 8px 10px;
 }
 
-.detailsBtn:hover {
+.detailsBtn:hover,
+.primaryBtn:hover {
   background: #4338ca;
 }
 
-/* Footer buttons */
 .footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
-.footer button {
-  border: none;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#optionsBtn {
-  background: #e5e7eb;
-}
-
-#toggleHighlight {
+.primaryBtn {
   background: #4f46e5;
   color: white;
+  padding: 10px 12px;
+  flex: 1;
 }
 
-/* Details view */
+.secondaryBtn {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 10px 12px;
+}
+
 .detailCard {
   background: white;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .original {
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.fullText {
+  display: none;
+  font-weight: bold;
+  margin-bottom: 8px;
+  line-height: 1.35;
 }
 
 .summary {
   font-size: 13px;
-  color: #555;
-  margin-bottom: 6px;
+  color: #4b5563;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.detailActions {
+  display: flex;
+  gap: 8px;
 }
 
 .locateBtn {
-  border: none;
   background: #10b981;
   color: white;
-  padding: 5px 8px;
-  border-radius: 6px;
-  cursor: pointer;
+  padding: 7px 10px;
 }
 
 .locateBtn:hover {
   background: #059669;
 }
 
+.expandBtn {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 7px 10px;
+}
+
 #backBtn {
   margin-bottom: 10px;
-  border: none;
-  background: #ddd;
-  padding: 6px;
-  border-radius: 6px;
-  cursor: pointer;
 }
