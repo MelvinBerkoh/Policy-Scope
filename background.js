@@ -1,11 +1,9 @@
 const cache = {};
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
-  console.log("BACKGROUND RECEIVED:", request); 
+  console.log("BACKGROUND RECEIVED:", request);
 
   if (request.action === "analyzeClause") {
-
     analyzeWithBackend(request.text)
       .then(result => {
         console.log("SENDING BACK TO POPUP:", result);
@@ -16,12 +14,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ summary: "AI unavailable" });
       });
 
-    return true; 
+    return true;
   }
 });
 
 async function analyzeWithBackend(text) {
-
   if (cache[text]) {
     console.log("CACHE HIT");
     return cache[text];
@@ -38,12 +35,15 @@ async function analyzeWithBackend(text) {
 
     const data = await res.json();
 
-    console.log("BACKEND RESPONSE:", data); 
+    console.log("BACKEND STATUS:", res.status);
+    console.log("BACKEND RESPONSE:", data);
+
+    if (!res.ok) {
+      return data?.summary || "Backend request failed";
+    }
 
     cache[text] = data.summary;
-
-    return data.summary;
-
+    return data.summary || "No summary returned";
   } catch (err) {
     console.error("Backend error:", err);
     return "AI unavailable";
