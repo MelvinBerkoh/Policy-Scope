@@ -43,11 +43,22 @@ h2 {
 .card {
   background: #ffffff;
   border-radius: 14px;
-  padding: 12px;
+  padding: 12px 14px;
   margin-bottom: 10px;
   box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
 }
+.cardMeta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+  line-height: 1.4;
+}
 
+.cardActions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
 .row {
   display: flex;
   justify-content: space-between;
@@ -95,12 +106,12 @@ h2 {
 }
 
 .detailsBtn {
-  margin-top: 8px;
-  width: 100%;
+    width: auto;
   background: #eef2ff;
   color: #4338ca;
   border: 1px solid #c7d2fe;
-  padding: 9px 12px;
+  padding: 7px 12px;
+  border-radius: 9px;
 }
 
 .detailsBtn:hover {
