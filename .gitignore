@@ -1,3 +1,4 @@
 .env
 node_modules/
 .DS_Storesrc/utils/openai.js
+src/utils/openai.js
