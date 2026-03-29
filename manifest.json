@@ -33,6 +33,8 @@
       "matches": ["<all_urls>"],
       "js": [
         "src/content/highlighter.js",
+        "src/content/parser.js",
+        "src/content/detector.js",
         "src/content/content.js"
       ],
       "run_at": "document_idle"
