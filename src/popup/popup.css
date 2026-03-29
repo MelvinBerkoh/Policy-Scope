@@ -1,33 +1,44 @@
 body {
   font-family: Arial, sans-serif;
-  width: 320px;
-  padding: 14px;
+  width: 420px;
+  padding: 16px;
   background: #f6f7fb;
   margin: 0;
   color: #111827;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 h1 {
-  font-size: 18px;
-  margin: 0 0 12px;
+  font-size: 20px;
+  margin: 0 0 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: 16px;
-  margin: 12px 0 14px;
-  letter-spacing: 0.04em;
+  font-size: 15px;
+  margin: 8px 0 16px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #374151;
 }
 
 .header {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .card {
   background: #ffffff;
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 14px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.08);
 }
 
 .row {
@@ -38,18 +49,20 @@ h2 {
 }
 
 .type {
-  font-weight: bold;
-  font-size: 13px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
 }
 
 .count {
   background: #1f2937;
   color: white;
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 3px 10px;
   font-size: 12px;
-  min-width: 18px;
+  min-width: 22px;
   text-align: center;
+  font-weight: 700;
 }
 
 .detailsBtn,
@@ -58,17 +71,27 @@ h2 {
 .locateBtn,
 .expandBtn {
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.detailsBtn:hover,
+.primaryBtn:hover,
+.locateBtn:hover,
+.expandBtn:hover,
+.secondaryBtn:hover {
+  transform: translateY(-1px);
 }
 
 .detailsBtn {
-  margin-top: 8px;
+  margin-top: 10px;
   width: 100%;
   background: #4f46e5;
   color: white;
-  padding: 8px 10px;
+  padding: 10px 12px;
 }
 
 .detailsBtn:hover,
@@ -80,71 +103,120 @@ h2 {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .primaryBtn {
   background: #4f46e5;
   color: white;
-  padding: 10px 12px;
+  padding: 11px 14px;
   flex: 1;
 }
 
 .secondaryBtn {
   background: #e5e7eb;
   color: #111827;
-  padding: 10px 12px;
+  padding: 11px 14px;
 }
 
 .detailCard {
-  background: white;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.08);
 }
 
-.original {
-  font-weight: bold;
-  margin-bottom: 8px;
-  line-height: 1.35;
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.original,
+.fullText {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.55;
+  margin-bottom: 12px;
 }
 
 .fullText {
   display: none;
-  font-weight: bold;
-  margin-bottom: 8px;
-  line-height: 1.35;
 }
 
 .summary {
   font-size: 13px;
-  color: #4b5563;
+  color: #1f2937;
+  line-height: 1.6;
   margin-bottom: 10px;
-  line-height: 1.4;
+  background: #f3f0ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 88px;
+  overflow: hidden;
+}
+
+.summary.expanded {
+  max-height: none;
+}
+.summaryToggleBtn {
+  border: none;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0;
+  margin: 0 0 14px;
+  cursor: pointer;
+}
+
+.summaryToggleBtn:hover {
+  text-decoration: underline;
 }
 
 .detailActions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.locateBtn,
+.expandBtn {
+  flex: 1;
+  padding: 9px 12px;
 }
 
 .locateBtn {
-  background: #10b981;
+  background: #4f46e5;
   color: white;
-  padding: 7px 10px;
 }
 
 .locateBtn:hover {
-  background: #059669;
+  background: #4338ca;
 }
 
 .expandBtn {
-  background: #e5e7eb;
+  background: #eef2f7;
   color: #111827;
-  padding: 7px 10px;
+}
+
+.expandBtn:hover,
+.secondaryBtn:hover {
+  background: #dbe2ea;
 }
 
 #backBtn {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+#detailContent {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 2px;
 }

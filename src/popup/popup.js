@@ -77,47 +77,67 @@ function showDetails(type, items) {
     const div = document.createElement("div");
     div.className = "detailCard";
 
-    div.innerHTML = `
-      <div class="original shortText">${truncateText(item.text, 170)}</div>
-      <div class="fullText">${item.text}</div>
-      <div class="summary">${truncateText(item.text, 90)}</div>
-      <div class="detailActions">
-        <button class="expandBtn">Expand</button>
-        <button class="locateBtn">Find</button>
-      </div>
-    `;
+  div.innerHTML = `
+  <div class="sectionLabel">Original Clause</div>
+  <div class="original shortText">${truncateText(item.text, 170)}</div>
+  <div class="fullText">${item.text}</div>
+
+  <div class="sectionLabel">AI Summary</div>
+  <div class="summary">Loading AI summary...</div>
+  <button class="summaryToggleBtn" style="display: none;">Show More</button>
+
+  <div class="detailActions">
+    <button class="expandBtn">Show Full Clause</button>
+    <button class="locateBtn">Locate</button>
+  </div>
+`;
 
     const summaryEl = div.querySelector(".summary");
     const shortEl = div.querySelector(".shortText");
     const fullEl = div.querySelector(".fullText");
     const expandBtn = div.querySelector(".expandBtn");
     const locateBtn = div.querySelector(".locateBtn");
+    const summaryToggleBtn = div.querySelector(".summaryToggleBtn");
 
-    chrome.runtime.sendMessage(
-      {
-        action: "analyzeClause",
-        text: item.text
-      },
-      res => {
-        if (chrome.runtime.lastError) {
-          summaryEl.innerText = "Unable to load summary";
-          return;
-        }
+   chrome.runtime.sendMessage(
+  {
+    action: "analyzeClause",
+    text: item.text
+  },
+  res => {
+    if (chrome.runtime.lastError) {
+      summaryEl.innerText = "Unable to load summary";
+      summaryToggleBtn.style.display = "none";
+      return;
+    }
 
-        if (res && res.summary) {
-          summaryEl.innerText = truncateText(res.summary, 120);
+    if (res && res.summary) {
+      summaryEl.innerText = res.summary;
+
+      requestAnimationFrame(() => {
+        if (summaryEl.scrollHeight > summaryEl.clientHeight + 2) {
+          summaryToggleBtn.style.display = "inline-block";
         } else {
-          summaryEl.innerText = "No response from AI";
+          summaryToggleBtn.style.display = "none";
         }
-      }
-    );
+      });
+    } else {
+      summaryEl.innerText = "No response from AI";
+      summaryToggleBtn.style.display = "none";
+    }
+  }
+);
 
     expandBtn.onclick = () => {
       const showingFull = fullEl.style.display === "block";
       fullEl.style.display = showingFull ? "none" : "block";
       shortEl.style.display = showingFull ? "block" : "none";
-      expandBtn.innerText = showingFull ? "Expand" : "Collapse";
+      expandBtn.innerText = showingFull ? "Show Full Clause" : "Collapse Clause";
     };
+    summaryToggleBtn.onclick = () => {
+  const expanded = summaryEl.classList.toggle("expanded");
+  summaryToggleBtn.innerText = expanded ? "Show Less" : "Show More";
+};
 
     locateBtn.onclick = () => {
       chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
