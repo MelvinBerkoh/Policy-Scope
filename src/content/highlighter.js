@@ -116,23 +116,39 @@ function createPolicyScopeBadge(count) {
   const existing = document.getElementById("policyScopeBadge");
   if (existing) existing.remove();
 
-  const badge = document.createElement("div");
+  const badge = document.createElement("button");
   badge.id = "policyScopeBadge";
   badge.innerText = `PolicyScope • ${count}`;
 
   badge.style.position = "fixed";
   badge.style.bottom = "20px";
   badge.style.right = "20px";
-  badge.style.background = "#111827";
+  badge.style.background = "linear-gradient(135deg, #4f46e5, #4338ca)";
   badge.style.color = "white";
-  badge.style.padding = "10px 14px";
+  badge.style.padding = "11px 16px";
   badge.style.borderRadius = "999px";
   badge.style.fontSize = "12px";
   badge.style.fontFamily = "Arial, sans-serif";
-  badge.style.fontWeight = "600";
-  badge.style.cursor = "default";
+  badge.style.fontWeight = "700";
+  badge.style.cursor = "pointer";
   badge.style.zIndex = "999999";
-  badge.style.boxShadow = "0 6px 18px rgba(0,0,0,0.18)";
+  badge.style.border = "none";
+  badge.style.boxShadow = "0 10px 24px rgba(79, 70, 229, 0.32)";
+  badge.style.transition = "transform 0.15s ease, box-shadow 0.15s ease";
+
+  badge.addEventListener("mouseenter", () => {
+    badge.style.transform = "translateY(-1px)";
+    badge.style.boxShadow = "0 14px 28px rgba(79, 70, 229, 0.38)";
+  });
+
+  badge.addEventListener("mouseleave", () => {
+    badge.style.transform = "translateY(0)";
+    badge.style.boxShadow = "0 10px 24px rgba(79, 70, 229, 0.32)";
+  });
+
+  badge.addEventListener("click", () => {
+    chrome.runtime.sendMessage({ action: "openPolicyScopePopup" });
+  });
 
   document.body.appendChild(badge);
 }

@@ -3,6 +3,16 @@ const cache = {};
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("BACKGROUND RECEIVED:", request);
 
+  if (request.action === "openPolicyScopePopup") {
+    chrome.windows.create({
+      url: chrome.runtime.getURL("src/popup/popup.html"),
+      type: "popup",
+      width: 460,
+      height: 720
+    });
+    return;
+  }
+
   if (request.action === "analyzeClause") {
     analyzeWithBackend(request.text)
       .then(result => {

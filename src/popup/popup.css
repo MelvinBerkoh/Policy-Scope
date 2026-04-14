@@ -1,8 +1,8 @@
 body {
- font-family: Arial, sans-serif;
+font-family: Arial, sans-serif;
   width: 420px;
   padding: 14px;
-  background: #f3f4f6;
+ 
   margin: 0;
   color: #111827;
   box-sizing: border-box;
@@ -15,11 +15,12 @@ body {
 }
 
 h1 {
-  font-size: 18px;
+    font-size: 18px;
   margin: 0 0 2px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #111827;
+  color: #000000;
+
 }
 
 h2 {
@@ -31,16 +32,16 @@ h2 {
 }
 
 .header {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .subtitle {
-  font-size: 12px;
-  color: #6b7280;
+    font-size: 12px;
+  color: #abb1b8;
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.35
 }
 
 .card {
@@ -251,4 +252,11 @@ h2 {
   letter-spacing: 0.08em;
   color: #4f46e5;
   margin-bottom: 4px;
+}
+
+
+
+.card,
+.detailCard {
+  background: #f8fafc;
 }

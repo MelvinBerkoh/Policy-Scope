@@ -22,10 +22,21 @@
 
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "PolicyScope"
+    "default_title": "PolicyScope",
+     "default_icon": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png"
+  }
   },
   "content_security_policy": {
   "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://localhost:3000"
+},
+"icons": {
+  "16": "assets/icons/icon16.png",
+  "32": "assets/icons/icon32.png",
+  "48": "assets/icons/icon48.png",
+  "128": "assets/icons/icon128.png"
 },
 
   "content_scripts": [

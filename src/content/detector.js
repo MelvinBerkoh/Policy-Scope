@@ -165,6 +165,50 @@ const CLAUSE_PATTERNS = {
   ]
 };
 
+const BIG_CATEGORY_MAP = {
+  "Data Collection": [
+    "data_collection",
+    "tracking_cookies",
+    "data_retention",
+    "sensitive_data"
+  ],
+  "Data Sharing": [
+    "data_sharing",
+    "third_party_services"
+  ],
+  "Billing & Subscriptions": [
+    "subscription_billing",
+    "cancellation_refunds",
+    "price_changes"
+  ],
+  "Legal & Disputes": [
+    "liability_limits",
+    "arbitration_disputes"
+  ],
+  "Account & Access": [
+    "account_termination"
+  ],
+  "Content & User Rights": [
+    "user_content_license"
+  ],
+  "Policy Changes & Communication": [
+    "terms_changes",
+    "marketing_communications"
+  ],
+  "Age Restrictions": [
+    "age_restrictions"
+  ]
+};
+
+function getBigCategoryForType(type) {
+  for (const [bigCategory, subtypes] of Object.entries(BIG_CATEGORY_MAP)) {
+    if (subtypes.includes(type)) {
+      return bigCategory;
+    }
+  }
+  return "Other";
+}
+
 function normalizeClauseText(text) {
   return text
     .replace(/\s+/g, " ")
@@ -199,6 +243,7 @@ function detectClauses(blocks) {
         if (patterns.some(pattern => pattern.test(trimmedSentence))) {
           results.push({
             type,
+            bigCategory: getBigCategoryForType(type),
             text: trimmedSentence,
             node: block.node,
             highlightElement: null
