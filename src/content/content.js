@@ -27,8 +27,12 @@ createPolicyScopeBadge(detectedClauses.length);
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getDetections") {
     sendResponse({
-      data: detectedClauses.map(({ type, text }) => ({ type, text }))
-    });
+    data: detectedClauses.map(({ type, bigCategory, text }) => ({
+      type,
+      bigCategory,
+      text
+    }))
+  });
     return;
   }
 

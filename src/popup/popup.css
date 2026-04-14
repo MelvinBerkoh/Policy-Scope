@@ -1,11 +1,11 @@
 body {
-font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif;
   width: 420px;
   padding: 14px;
- 
   margin: 0;
   color: #111827;
   box-sizing: border-box;
+  background: #f6f7fb;
 }
 
 *,
@@ -15,12 +15,11 @@ font-family: Arial, sans-serif;
 }
 
 h1 {
-    font-size: 18px;
+  font-size: 18px;
   margin: 0 0 2px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #000000;
-
+  color: #111827;
 }
 
 h2 {
@@ -34,46 +33,46 @@ h2 {
 .header {
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .subtitle {
-    font-size: 12px;
-  color: #abb1b8;
+  font-size: 12px;
+  color: #6b7280;
   margin: 0;
-  line-height: 1.35
+  line-height: 1.35;
 }
 
-.card {
-  background: #ffffff;
+.card,
+.detailCard,
+.subcategoryCard {
+  background: #f8fafc;
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 10px;
   box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
 }
-.cardMeta {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 6px;
-  line-height: 1.4;
-}
 
-.cardActions {
-  margin-top: 10px;
-  display: flex;
-  justify-content: flex-start;
-}
-.row {
+.row,
+.subcategoryRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
 }
 
-.type {
+.cardHeaderText,
+.subcategoryHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.type,
+.subcategoryType {
   font-weight: 700;
   font-size: 14px;
   color: #111827;
+  display: block;
 }
 
 .count {
@@ -85,6 +84,15 @@ h2 {
   min-width: 22px;
   text-align: center;
   font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cardMeta,
+.subcategoryMeta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 .detailsBtn,
@@ -97,7 +105,7 @@ h2 {
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .detailsBtn:hover,
@@ -110,12 +118,13 @@ h2 {
 }
 
 .detailsBtn {
-    width: auto;
+  width: auto;
   background: #eef2ff;
   color: #4338ca;
   border: 1px solid #c7d2fe;
   padding: 7px 12px;
   border-radius: 9px;
+  flex-shrink: 0;
 }
 
 .detailsBtn:hover {
@@ -150,14 +159,6 @@ h2 {
 .secondaryBtn:hover,
 .expandBtn:hover {
   background: #dbe2ea;
-}
-
-.detailCard {
-  background: #ffffff;
-  padding: 15px;
-  border-radius: 14px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
 }
 
 .sectionLabel {
@@ -236,27 +237,14 @@ h2 {
   color: #111827;
 }
 
-#backBtn {
+#backBtn,
+#subcategoriesBackBtn {
   margin-bottom: 12px;
 }
 
-#detailContent {
+#detailContent,
+#subcategoryContent {
   max-height: 500px;
   overflow-y: auto;
   padding-right: 2px;
-}
-.eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #4f46e5;
-  margin-bottom: 4px;
-}
-
-
-
-.card,
-.detailCard {
-  background: #f8fafc;
 }

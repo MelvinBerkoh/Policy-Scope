@@ -1,4 +1,6 @@
 let globalDetections = [];
+let lastView = "main";
+let currentBigCategory = null;
 
 const labelMap = {
   data_collection: "Data Collection",
@@ -6,56 +8,64 @@ const labelMap = {
   tracking_cookies: "Tracking & Cookies",
   data_retention: "Data Retention",
   sensitive_data: "Sensitive Data",
-
   subscription_billing: "Subscription & Billing",
   cancellation_refunds: "Cancellation & Refunds",
   price_changes: "Price Changes",
-
   liability_limits: "Liability Limits",
   arbitration_disputes: "Dispute Resolution",
   terms_changes: "Terms Changes",
-
   account_termination: "Account Termination",
   third_party_services: "Third-Party Services",
   user_content_license: "User Content Rights",
   marketing_communications: "Marketing Communications",
-
   age_restrictions: "Age Restrictions"
 };
 
-const colors = {
-  data_collection: "#22c55e",
-  data_sharing: "#22c55e",
-  tracking_cookies: "#22c55e",
-  data_retention: "#22c55e",
-  sensitive_data: "#22c55e",
-
-  subscription_billing: "#f59e0b",
-  cancellation_refunds: "#f59e0b",
-  price_changes: "#f59e0b",
-
-  liability_limits: "#ef4444",
-  arbitration_disputes: "#ef4444",
-  terms_changes: "#ef4444",
-
-  account_termination: "#6366f1",
-  third_party_services: "#6366f1",
-  user_content_license: "#6366f1",
-  marketing_communications: "#6366f1",
-
-  age_restrictions: "#eab308"
+const bigCategoryMap = {
+  "Data Collection": [
+    "data_collection",
+    "tracking_cookies",
+    "data_retention",
+    "sensitive_data"
+  ],
+  "Data Sharing": [
+    "data_sharing",
+    "third_party_services"
+  ],
+  "Billing & Subscriptions": [
+    "subscription_billing",
+    "cancellation_refunds",
+    "price_changes"
+  ],
+  "Legal & Disputes": [
+    "liability_limits",
+    "arbitration_disputes"
+  ],
+  "Account & Access": [
+    "account_termination"
+  ],
+  "Content & User Rights": [
+    "user_content_license"
+  ],
+  "Policy Changes & Communication": [
+    "terms_changes",
+    "marketing_communications"
+  ],
+  "Age Restrictions": [
+    "age_restrictions"
+  ]
 };
 
-function groupByType(detections) {
-  const grouped = {};
-
-  detections.forEach(detection => {
-    if (!grouped[detection.type]) grouped[detection.type] = [];
-    grouped[detection.type].push(detection);
-  });
-
-  return grouped;
-}
+const bigCategoryColors = {
+  "Data Collection": "#22c55e",
+  "Data Sharing": "#22c55e",
+  "Billing & Subscriptions": "#f59e0b",
+  "Legal & Disputes": "#ef4444",
+  "Account & Access": "#6366f1",
+  "Content & User Rights": "#6366f1",
+  "Policy Changes & Communication": "#6366f1",
+  "Age Restrictions": "#eab308"
+};
 
 function truncateText(text, maxLength = 140) {
   if (!text) return "";
@@ -71,7 +81,42 @@ function formatLabel(type) {
     .replace(/\b\w/g, char => char.toUpperCase());
 }
 
-function getCategoryDescription(type, count) {
+function groupDetectionsByBigCategory(detections) {
+  const grouped = {};
+
+  Object.keys(bigCategoryMap).forEach(category => {
+    grouped[category] = [];
+  });
+
+  detections.forEach(detection => {
+    const bigCategory = detection.bigCategory;
+    if (!grouped[bigCategory]) grouped[bigCategory] = [];
+    grouped[bigCategory].push(detection);
+  });
+
+  return grouped;
+}
+
+function groupDetectionsByType(detections) {
+  const grouped = {};
+
+  detections.forEach(detection => {
+    if (!grouped[detection.type]) grouped[detection.type] = [];
+    grouped[detection.type].push(detection);
+  });
+
+  return grouped;
+}
+
+function getBigCategoryDescription(bigCategory, items) {
+  const uniqueTypes = new Set(items.map(item => item.type));
+  const typeCount = uniqueTypes.size;
+  const typeWord = typeCount === 1 ? "type" : "types";
+
+  return `${typeCount} ${typeWord} found in this category.`;
+}
+
+function getSubcategoryDescription(type, count) {
   const clauseWord = count === 1 ? "clause" : "clauses";
 
   const descriptions = {
@@ -80,71 +125,114 @@ function getCategoryDescription(type, count) {
     tracking_cookies: `${count} flagged ${clauseWord} about cookies, tracking, or analytics.`,
     data_retention: `${count} flagged ${clauseWord} about how long data may be kept.`,
     sensitive_data: `${count} flagged ${clauseWord} about sensitive or device-related data.`,
-
     subscription_billing: `${count} flagged ${clauseWord} about charges, billing, or renewals.`,
     cancellation_refunds: `${count} flagged ${clauseWord} about cancellations or refunds.`,
     price_changes: `${count} flagged ${clauseWord} about prices or fee changes.`,
-
     liability_limits: `${count} flagged ${clauseWord} limiting responsibility or warranties.`,
     arbitration_disputes: `${count} flagged ${clauseWord} about disputes, arbitration, or legal rights.`,
     terms_changes: `${count} flagged ${clauseWord} about changing terms later.`,
-
     account_termination: `${count} flagged ${clauseWord} about suspending or ending access.`,
     third_party_services: `${count} flagged ${clauseWord} involving outside services or providers.`,
     user_content_license: `${count} flagged ${clauseWord} about rights to content you upload.`,
     marketing_communications: `${count} flagged ${clauseWord} about promotional messages or outreach.`,
-
     age_restrictions: `${count} flagged ${clauseWord} about age limits or parental requirements.`
   };
 
   return descriptions[type] || `${count} flagged ${clauseWord} in this category.`;
 }
 
-function renderMain(grouped) {
+function showView(viewName) {
+  const mainView = document.getElementById("mainView");
+  const subcategoriesView = document.getElementById("subcategoriesView");
+  const detailsView = document.getElementById("detailsView");
+
+  if (mainView) mainView.style.display = "none";
+  if (subcategoriesView) subcategoriesView.style.display = "none";
+  if (detailsView) detailsView.style.display = "none";
+
+  if (viewName === "main" && mainView) mainView.style.display = "block";
+  if (viewName === "subcategories" && subcategoriesView) subcategoriesView.style.display = "block";
+  if (viewName === "details" && detailsView) detailsView.style.display = "block";
+}
+
+function renderMain() {
   const results = document.getElementById("results");
   if (!results) return;
 
+  const grouped = groupDetectionsByBigCategory(globalDetections);
   results.innerHTML = "";
 
-  Object.entries(grouped).forEach(([type, items]) => {
+  Object.entries(grouped).forEach(([bigCategory, items]) => {
+    if (!items.length) return;
+
     const div = document.createElement("div");
     div.className = "card";
-    div.style.borderLeft = `4px solid ${colors[type] || "#d1d5db"}`;
+    div.style.borderLeft = `4px solid ${bigCategoryColors[bigCategory] || "#d1d5db"}`;
 
     div.innerHTML = `
       <div class="row">
-        <span class="type">${formatLabel(type)}</span>
-        <span class="count">${items.length}</span>
-      </div>
-      <div class="cardMeta">${getCategoryDescription(type, items.length)}</div>
-      <div class="cardActions">
+        <div class="cardHeaderText">
+          <span class="type">${bigCategory}</span>
+          <div class="cardMeta">${getBigCategoryDescription(bigCategory, items)}</div>
+        </div>
         <button class="detailsBtn">View Details</button>
       </div>
     `;
 
     div.querySelector(".detailsBtn").onclick = () => {
-      showDetails(type, items);
+      currentBigCategory = bigCategory;
+      showSubcategories(bigCategory, items);
     };
 
     results.appendChild(div);
   });
 }
 
-function showDetails(type, items) {
-  const mainView = document.getElementById("mainView");
-  const detailsView = document.getElementById("detailsView");
+function showSubcategories(bigCategory, items) {
+  const title = document.getElementById("subcategoryTitle");
+  const container = document.getElementById("subcategoryContent");
+
+  if (!title || !container) return;
+
+  title.innerText = bigCategory.toUpperCase();
+  container.innerHTML = "";
+
+  const groupedByType = groupDetectionsByType(items);
+
+  Object.entries(groupedByType).forEach(([type, clauses]) => {
+    const card = document.createElement("div");
+    card.className = "subcategoryCard";
+    card.style.borderLeft = `4px solid ${bigCategoryColors[bigCategory] || "#d1d5db"}`;
+
+    card.innerHTML = `
+      <div class="subcategoryRow">
+        <div class="subcategoryHeaderText">
+          <span class="subcategoryType">${formatLabel(type)}</span>
+          <div class="subcategoryMeta">${getSubcategoryDescription(type, clauses.length)}</div>
+        </div>
+        <button class="detailsBtn">View Details</button>
+      </div>
+    `;
+
+    card.querySelector(".detailsBtn").onclick = () => {
+      lastView = "subcategories";
+      showClauseDetails(type, clauses);
+    };
+
+    container.appendChild(card);
+  });
+
+  lastView = "main";
+  showView("subcategories");
+}
+
+function showClauseDetails(type, items) {
   const detailTitle = document.getElementById("detailTitle");
   const container = document.getElementById("detailContent");
 
-  if (!mainView || !detailsView || !detailTitle || !container) {
-    console.error("Popup view elements are missing");
-    return;
-  }
+  if (!detailTitle || !container) return;
 
-  mainView.style.display = "none";
-  detailsView.style.display = "block";
   detailTitle.innerText = formatLabel(type).toUpperCase();
-
   container.innerHTML = "";
 
   items.forEach(item => {
@@ -227,6 +315,8 @@ function showDetails(type, items) {
 
     container.appendChild(div);
   });
+
+  showView("details");
 }
 
 function fetchDetections(retries = 8) {
@@ -257,8 +347,7 @@ function fetchDetections(retries = 8) {
         }
 
         globalDetections = res.data;
-        const grouped = groupByType(globalDetections);
-        renderMain(grouped);
+        renderMain();
       }
     );
   });
@@ -276,16 +365,19 @@ document.getElementById("toggleHighlight").onclick = () => {
   });
 };
 
+document.getElementById("subcategoriesBackBtn").onclick = () => {
+  showView("main");
+};
+
 document.getElementById("backBtn").onclick = () => {
-  const mainView = document.getElementById("mainView");
-  const detailsView = document.getElementById("detailsView");
+  if (lastView === "subcategories") {
+    showView("subcategories");
+    return;
+  }
 
-  if (!mainView || !detailsView) return;
-
-  mainView.style.display = "block";
-  detailsView.style.display = "none";
+  showView("main");
 };
 
 document.getElementById("optionsBtn").onclick = () => {
-  alert("Settings coming soon");
+  chrome.runtime.openOptionsPage();
 };
