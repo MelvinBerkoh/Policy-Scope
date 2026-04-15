@@ -179,7 +179,12 @@ document.getElementById("saveBtn").onclick = () => {
   const settings = getSettingsFromForm();
 
   chrome.storage.sync.set({ policyScopeSettings: settings }, () => {
-    setStatus("Saved. Settings will apply after wiring the behavior.");
+    chrome.runtime.sendMessage(
+      { action: "refreshAllTabsPolicyScopeSettings" },
+      () => {
+        setStatus("Saved. Settings applied across open tabs.");
+      }
+    );
   });
 };
 
