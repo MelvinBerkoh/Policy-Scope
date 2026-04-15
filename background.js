@@ -13,6 +13,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return;
   }
 
+  if (request.action === "refreshAllTabsHighlightColors") {
+    chrome.tabs.query({}, tabs => {
+      tabs.forEach(tab => {
+        if (!tab.id || !tab.url) return;
+        if (tab.url.startsWith("chrome://")) return;
+
+        chrome.tabs.sendMessage(tab.id, { action: "refreshHighlightColors" }, () => {
+          void chrome.runtime.lastError;
+        });
+      });
+    });
+    sendResponse({ ok: true });
+    return;
+  }
+
   if (request.action === "analyzeClause") {
     analyzeWithBackend(request.text)
       .then(result => {
@@ -29,9 +44,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 async function analyzeWithBackend(text) {
-  if (cache[text]) {
+  const safeText = String(text || "").trim().slice(0, 3000);
+
+  if (!safeText) {
+    return "No summary returned";
+  }
+
+  if (cache[safeText]) {
     console.log("CACHE HIT");
-    return cache[text];
+    return cache[safeText];
   }
 
   try {
@@ -40,7 +61,7 @@ async function analyzeWithBackend(text) {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text: safeText })
     });
 
     const data = await res.json();
@@ -52,7 +73,7 @@ async function analyzeWithBackend(text) {
       return data?.summary || "Backend request failed";
     }
 
-    cache[text] = data.summary;
+    cache[safeText] = data.summary;
     return data.summary || "No summary returned";
   } catch (err) {
     console.error("Backend error:", err);

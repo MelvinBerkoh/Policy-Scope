@@ -6,19 +6,7 @@ const detectedClauses = detectClauses(blocks);
 console.log("Detected Clauses:", detectedClauses);
 
 function toggleHighlights() {
-  if (!window.highlightedSpans || window.highlightedSpans.length === 0) {
-    console.log("No highlights to toggle");
-    return;
-  }
-
-  window.highlightsVisible = !window.highlightsVisible;
-
-  window.highlightedSpans.forEach(span => {
-    span.style.borderBottomColor = window.highlightsVisible
-      ? span.dataset.originalBorderColor
-      : "transparent";
-    span.style.backgroundColor = "transparent";
-  });
+  updateHighlightVisibility(!window.highlightsVisible);
 }
 
 highlightClauses(detectedClauses);
@@ -27,12 +15,12 @@ createPolicyScopeBadge(detectedClauses.length);
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getDetections") {
     sendResponse({
-    data: detectedClauses.map(({ type, bigCategory, text }) => ({
-      type,
-      bigCategory,
-      text
-    }))
-  });
+      data: detectedClauses.map(({ type, bigCategory, text }) => ({
+        type,
+        bigCategory,
+        text
+      }))
+    });
     return;
   }
 
@@ -70,5 +58,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "toggleHighlight") {
     toggleHighlights();
     return;
+  }
+
+  if (request.action === "refreshHighlightColors") {
+    refreshHighlightColors().then(() => sendResponse({ ok: true }));
+    return true;
   }
 });

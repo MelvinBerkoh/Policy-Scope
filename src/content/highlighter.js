@@ -1,38 +1,39 @@
 window.highlightsVisible = true;
 window.highlightedSpans = [];
+window.currentHighlightColors = null;
+
+const DEFAULT_BIG_CATEGORY_COLORS = {
+  "Data Collection": "#22c55e",
+  "Data Sharing": "#22c55e",
+  "Billing & Subscriptions": "#f59e0b",
+  "Legal & Disputes": "#ef4444",
+  "Account & Access": "#6366f1",
+  "Content & User Rights": "#6366f1",
+  "Policy Changes & Communication": "#6366f1",
+  "Age Restrictions": "#eab308"
+};
 
 function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function getBorderColor(type) {
-  const borderColors = {
-    data_collection: "#22c55e",
-    data_sharing: "#22c55e",
-    tracking_cookies: "#22c55e",
-    data_retention: "#22c55e",
-    sensitive_data: "#22c55e",
-
-    subscription_billing: "#f59e0b",
-    cancellation_refunds: "#f59e0b",
-    price_changes: "#f59e0b",
-
-    liability_limits: "#ef4444",
-    arbitration_disputes: "#ef4444",
-    terms_changes: "#ef4444",
-
-    account_termination: "#6366f1",
-    third_party_services: "#6366f1",
-    user_content_license: "#6366f1",
-    marketing_communications: "#6366f1",
-
-    age_restrictions: "#eab308"
-  };
-
-  return borderColors[type] || "#94a3b8";
+function getStoredHighlightColors() {
+  return new Promise(resolve => {
+    chrome.storage.sync.get(["highlightColors"], result => {
+      resolve({
+        ...DEFAULT_BIG_CATEGORY_COLORS,
+        ...(result.highlightColors || {})
+      });
+    });
+  });
 }
 
-function applyHighlightStyles(span, borderColor, type) {
+function getBorderColorForClause(clause) {
+  const colors = window.currentHighlightColors || DEFAULT_BIG_CATEGORY_COLORS;
+  return colors[clause.bigCategory] || "#94a3b8";
+}
+
+function applyHighlightStyles(span, borderColor, clause) {
   span.style.backgroundColor = "transparent";
   span.style.borderBottom = `2px solid ${borderColor}`;
   span.style.borderRadius = "2px";
@@ -40,7 +41,9 @@ function applyHighlightStyles(span, borderColor, type) {
   span.style.boxDecorationBreak = "clone";
   span.style.webkitBoxDecorationBreak = "clone";
   span.dataset.originalBorderColor = borderColor;
-  span.title = type.replaceAll("_", " ");
+  span.dataset.bigCategory = clause.bigCategory || "";
+  span.dataset.subcategory = clause.type || "";
+  span.title = `${clause.bigCategory || "PolicyScope"}${clause.type ? ` • ${clause.type.replaceAll("_", " ")}` : ""}`;
 }
 
 function highlightSingleClause(clause) {
@@ -69,8 +72,8 @@ function highlightSingleClause(clause) {
   }
 
   const span = document.createElement("span");
-  const borderColor = getBorderColor(clause.type);
-  applyHighlightStyles(span, borderColor, clause.type);
+  const borderColor = getBorderColorForClause(clause);
+  applyHighlightStyles(span, borderColor, clause);
   span.textContent = matchText;
   fragment.appendChild(span);
 
@@ -86,7 +89,8 @@ function highlightSingleClause(clause) {
   return true;
 }
 
-function highlightClauses(detectedClauses) {
+async function highlightClauses(detectedClauses) {
+  window.currentHighlightColors = await getStoredHighlightColors();
   window.highlightedSpans = [];
 
   const groupedByNode = new Map();
@@ -106,9 +110,47 @@ function highlightClauses(detectedClauses) {
       const success = highlightSingleClause(clause);
 
       if (success && clause.highlightElement) {
-        clause.node = clause.highlightElement.nextSibling || clause.highlightElement.previousSibling || clause.node;
+        clause.node =
+          clause.highlightElement.nextSibling ||
+          clause.highlightElement.previousSibling ||
+          clause.node;
       }
     });
+  });
+
+  if (!window.highlightsVisible) {
+    updateHighlightVisibility(false);
+  }
+}
+
+function updateHighlightVisibility(isVisible) {
+  window.highlightsVisible = isVisible;
+
+  if (!window.highlightedSpans || window.highlightedSpans.length === 0) {
+    return;
+  }
+
+  window.highlightedSpans.forEach(span => {
+    span.style.borderBottomColor = isVisible
+      ? span.dataset.originalBorderColor
+      : "transparent";
+    span.style.backgroundColor = "transparent";
+  });
+}
+
+async function refreshHighlightColors() {
+  const colors = await getStoredHighlightColors();
+  window.currentHighlightColors = colors;
+
+  if (!window.highlightedSpans || window.highlightedSpans.length === 0) {
+    return;
+  }
+
+  window.highlightedSpans.forEach(span => {
+    const bigCategory = span.dataset.bigCategory;
+    const newColor = colors[bigCategory] || "#94a3b8";
+    span.dataset.originalBorderColor = newColor;
+    span.style.borderBottomColor = window.highlightsVisible ? newColor : "transparent";
   });
 }
 
