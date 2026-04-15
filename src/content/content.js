@@ -1,3 +1,67 @@
-// This will be the main file for the content script. This is where we will be importing the parser, detector, and highlighter modules and then running the main logic of the extension.
-// It will call parser run detector, trigger the highlighting and send the results to the popup. 
-// This is going to be the main entry point for the content script and it will be responsible for orchestrating the different modules and making sure that everything runs smoothly.
+console.log("PolicyScope content script loaded");
+
+const blocks = getTextBlocks();
+const detectedClauses = detectClauses(blocks);
+
+console.log("Detected Clauses:", detectedClauses);
+
+function toggleHighlights() {
+  updateHighlightVisibility(!window.highlightsVisible);
+}
+
+highlightClauses(detectedClauses);
+createPolicyScopeBadge(detectedClauses.length);
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getDetections") {
+    sendResponse({
+      data: detectedClauses.map(({ type, bigCategory, text }) => ({
+        type,
+        bigCategory,
+        text
+      }))
+    });
+    return;
+  }
+
+  if (request.action === "scrollToClause") {
+    const match = detectedClauses.find(c => c.text === request.text);
+
+    if (match?.highlightElement) {
+      match.highlightElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    } else if (match?.node?.parentElement) {
+      match.node.parentElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+
+    return;
+  }
+
+  if (request.action === "analyzeClause") {
+    chrome.runtime.sendMessage(
+      {
+        action: "analyzeClause",
+        text: request.text
+      },
+      response => {
+        sendResponse(response);
+      }
+    );
+    return true;
+  }
+
+  if (request.action === "toggleHighlight") {
+    toggleHighlights();
+    return;
+  }
+
+  if (request.action === "refreshHighlightColors") {
+    refreshHighlightColors().then(() => sendResponse({ ok: true }));
+    return true;
+  }
+});

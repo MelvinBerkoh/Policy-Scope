@@ -1,0 +1,22 @@
+{
+  "name": "policyscope",
+  "version": "1.0.0",
+  "description": "This needs Project Overview What the extension does How to load it in Chrome MVP scope (the 6 clauses in which we need to focus on)",
+  "main": "background.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-fetch": "^2.7.0"
+  }
+}

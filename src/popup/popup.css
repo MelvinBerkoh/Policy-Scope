@@ -1,2 +1,250 @@
-/* Basic styling sheets for the popup HTML interface of the extension. for the people working on this please use classes and ids that are descriptive to what they do. */
-/* This will help with visual clarity and non clashing styles. */
+body {
+  font-family: Arial, sans-serif;
+  width: 420px;
+  padding: 14px;
+  margin: 0;
+  color: #111827;
+  box-sizing: border-box;
+  background: #f6f7fb;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0 0 2px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+h2 {
+  font-size: 14px;
+  margin: 8px 0 14px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #374151;
+}
+
+.header {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.card,
+.detailCard,
+.subcategoryCard {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.07);
+}
+
+.row,
+.subcategoryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.cardHeaderText,
+.subcategoryHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+.type,
+.subcategoryType {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+  display: block;
+}
+
+.count {
+  background: #1f2937;
+  color: white;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 11px;
+  min-width: 22px;
+  text-align: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cardMeta,
+.subcategoryMeta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.detailsBtn,
+.primaryBtn,
+.secondaryBtn,
+.locateBtn,
+.expandBtn {
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.detailsBtn:hover,
+.primaryBtn:hover,
+.locateBtn:hover,
+.expandBtn:hover,
+.secondaryBtn:hover,
+.summaryToggleBtn:hover {
+  transform: translateY(-1px);
+}
+
+.detailsBtn {
+  width: auto;
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  padding: 7px 12px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.detailsBtn:hover {
+  background: #e0e7ff;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.primaryBtn {
+  background: #4f46e5;
+  color: white;
+  padding: 10px 12px;
+  flex: 1;
+}
+
+.primaryBtn:hover,
+.locateBtn:hover {
+  background: #4338ca;
+}
+
+.secondaryBtn {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 10px 12px;
+}
+
+.secondaryBtn:hover,
+.expandBtn:hover {
+  background: #dbe2ea;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.original,
+.fullText {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+.fullText {
+  display: none;
+}
+
+.summary {
+  font-size: 13px;
+  color: #1f2937;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  background: #f3f0ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 88px;
+  overflow: hidden;
+}
+
+.summary.expanded {
+  max-height: none;
+}
+
+.summaryToggleBtn {
+  border: none;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0;
+  margin: 0 0 14px;
+  cursor: pointer;
+}
+
+.summaryToggleBtn:hover {
+  text-decoration: underline;
+}
+
+.detailActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.locateBtn,
+.expandBtn {
+  flex: 1;
+  padding: 9px 12px;
+}
+
+.locateBtn {
+  background: #4f46e5;
+  color: white;
+}
+
+.expandBtn {
+  background: #eef2f7;
+  color: #111827;
+}
+
+#backBtn,
+#subcategoriesBackBtn {
+  margin-bottom: 12px;
+}
+
+#detailContent,
+#subcategoryContent {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 2px;
+}

@@ -9,5 +9,35 @@
     <link rel="stylesheet" href="popup.css" />
     <title>PolicyScope</title>
   </head>
-  <body></body>
+  <body>
+    <div id="mainView">
+      <div class="header">
+        <h1>PolicyScope</h1>
+        <p class="subtitle">Flagged clauses worth reviewing</p>
+      </div>
+
+      <div id="results"></div>
+
+      <div class="footer">
+        <button id="optionsBtn" class="secondaryBtn">Options</button>
+        <button id="toggleHighlight" class="primaryBtn">
+          Toggle Highlight
+        </button>
+      </div>
+    </div>
+
+    <div id="subcategoriesView" style="display: none">
+      <button id="subcategoriesBackBtn" class="secondaryBtn">Back</button>
+      <h2 id="subcategoryTitle"></h2>
+      <div id="subcategoryContent"></div>
+    </div>
+
+    <div id="detailsView" style="display: none">
+      <button id="backBtn" class="secondaryBtn">Back</button>
+      <h2 id="detailTitle"></h2>
+      <div id="detailContent"></div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
 </html>
