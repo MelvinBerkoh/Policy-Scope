@@ -11,11 +11,67 @@
       <div class="header">
         <h1>PolicyScope Settings</h1>
         <p class="subtitle">
-          Customize highlight colors for the Big 8 categories.
+          Customize highlights, categories, and on-page behavior.
         </p>
       </div>
 
-      <div id="settingsList" class="settingsList"></div>
+      <section class="section">
+        <h2>Highlight Appearance</h2>
+        <div class="sectionCard">
+          <div class="field">
+            <label for="highlightStyle" class="fieldLabel"
+              >Highlight style</label
+            >
+            <select id="highlightStyle" class="selectInput">
+              <option value="underline">Underline</option>
+              <option value="background">Soft background</option>
+              <option value="both">Underline + background</option>
+            </select>
+          </div>
+
+          <div class="toggleRow">
+            <div>
+              <div class="toggleTitle">Highlights enabled by default</div>
+              <div class="toggleMeta">
+                Choose whether highlights appear automatically when a page
+                loads.
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="highlightsEnabledByDefault" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Highlight Colors</h2>
+        <div id="colorSettingsList" class="settingsList"></div>
+      </section>
+
+      <section class="section">
+        <h2>On-Page Experience</h2>
+        <div class="sectionCard">
+          <div class="toggleRow">
+            <div>
+              <div class="toggleTitle">Show floating page badge</div>
+              <div class="toggleMeta">
+                Display the PolicyScope badge at the bottom of policy pages.
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="showFloatingBadge" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Category Filters</h2>
+        <div id="categorySettingsList" class="settingsList"></div>
+      </section>
 
       <div class="actions">
         <button id="resetBtn" class="secondaryBtn">Reset Defaults</button>
