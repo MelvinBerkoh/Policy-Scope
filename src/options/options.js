@@ -46,6 +46,8 @@ const CATEGORY_DESCRIPTIONS = {
   "Age Restrictions": "Show or hide age restriction detections."
 };
 
+let statusTimer = null;
+
 function deepCloneDefaults() {
   return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 }
@@ -69,7 +71,17 @@ function mergeSettings(savedSettings = {}) {
 
 function setStatus(text) {
   const status = document.getElementById("statusText");
-  if (status) status.innerText = text;
+  if (!status) return;
+
+  status.innerText = text;
+
+  if (statusTimer) clearTimeout(statusTimer);
+
+  if (text) {
+    statusTimer = setTimeout(() => {
+      status.innerText = "";
+    }, 2500);
+  }
 }
 
 function renderColorSettings(colors) {
@@ -176,12 +188,18 @@ function loadSettings() {
 }
 
 document.getElementById("saveBtn").onclick = () => {
+  const saveBtn = document.getElementById("saveBtn");
   const settings = getSettingsFromForm();
+
+  saveBtn.disabled = true;
+  saveBtn.innerText = "Saving...";
 
   chrome.storage.sync.set({ policyScopeSettings: settings }, () => {
     chrome.runtime.sendMessage(
       { action: "refreshAllTabsPolicyScopeSettings" },
       () => {
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Save Changes";
         setStatus("Saved. Settings applied across open tabs.");
       }
     );
