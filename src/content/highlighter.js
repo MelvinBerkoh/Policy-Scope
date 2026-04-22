@@ -94,9 +94,10 @@ function applyHighlightStyles(span, borderColor, clause) {
   }
 
   span.dataset.originalBorderColor = borderColor;
-  span.dataset.originalBackgroundColor = style === "background" || style === "both"
-    ? hexToRgba(borderColor, style === "background" ? 0.18 : 0.14)
-    : "transparent";
+  span.dataset.originalBackgroundColor =
+    style === "background" || style === "both"
+      ? hexToRgba(borderColor, style === "background" ? 0.18 : 0.14)
+      : "transparent";
   span.dataset.bigCategory = clause.bigCategory || "";
   span.dataset.subcategory = clause.type || "";
   span.title = `${clause.bigCategory || "PolicyScope"}${clause.type ? ` • ${clause.type.replaceAll("_", " ")}` : ""}`;
@@ -125,47 +126,78 @@ function setSpanVisualState(span, isVisible) {
   }
 }
 
-function highlightSingleClause(clause) {
-  const node = clause.node;
-  if (!node || !node.parentNode || !clause.text) return false;
+function buildNonOverlappingMatches(fullText, clauses) {
+  const rawMatches = [];
+
+  clauses.forEach(clause => {
+    const sentence = clause.text?.trim();
+    if (!sentence) return;
+
+    const regex = new RegExp(escapeRegExp(sentence), "g");
+    let match;
+
+    while ((match = regex.exec(fullText)) !== null) {
+      rawMatches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        text: match[0],
+        clause
+      });
+    }
+  });
+
+  rawMatches.sort((a, b) => {
+    if (a.start !== b.start) return a.start - b.start;
+    return (b.end - b.start) - (a.end - a.start);
+  });
+
+  const accepted = [];
+  let lastEnd = -1;
+
+  rawMatches.forEach(match => {
+    if (match.start >= lastEnd) {
+      accepted.push(match);
+      lastEnd = match.end;
+    }
+  });
+
+  return accepted;
+}
+
+function highlightNodeClauses(node, clauses) {
+  if (!node || !node.parentNode || !clauses.length) return;
 
   const fullText = node.textContent;
-  const sentence = clause.text.trim();
-  if (!fullText || !sentence) return false;
+  if (!fullText) return;
 
-  const escapedSentence = escapeRegExp(sentence);
-  const match = fullText.match(new RegExp(escapedSentence));
-  if (!match || typeof match.index !== "number") return false;
-
-  const start = match.index;
-  const end = start + sentence.length;
-
-  const beforeText = fullText.slice(0, start);
-  const matchText = fullText.slice(start, end);
-  const afterText = fullText.slice(end);
+  const matches = buildNonOverlappingMatches(fullText, clauses);
+  if (!matches.length) return;
 
   const fragment = document.createDocumentFragment();
+  let cursor = 0;
 
-  if (beforeText) {
-    fragment.appendChild(document.createTextNode(beforeText));
-  }
+  matches.forEach(match => {
+    if (match.start > cursor) {
+      fragment.appendChild(document.createTextNode(fullText.slice(cursor, match.start)));
+    }
 
-  const span = document.createElement("span");
-  const borderColor = getBorderColorForClause(clause);
-  applyHighlightStyles(span, borderColor, clause);
-  span.textContent = matchText;
-  fragment.appendChild(span);
+    const span = document.createElement("span");
+    const borderColor = getBorderColorForClause(match.clause);
+    applyHighlightStyles(span, borderColor, match.clause);
+    span.textContent = fullText.slice(match.start, match.end);
 
-  if (afterText) {
-    fragment.appendChild(document.createTextNode(afterText));
+    match.clause.highlightElement = span;
+    window.highlightedSpans.push(span);
+    fragment.appendChild(span);
+
+    cursor = match.end;
+  });
+
+  if (cursor < fullText.length) {
+    fragment.appendChild(document.createTextNode(fullText.slice(cursor)));
   }
 
   node.parentNode.replaceChild(fragment, node);
-
-  clause.highlightElement = span;
-  window.highlightedSpans.push(span);
-
-  return true;
 }
 
 async function highlightClauses(detectedClauses) {
@@ -182,19 +214,8 @@ async function highlightClauses(detectedClauses) {
     groupedByNode.get(clause.node).push(clause);
   });
 
-  groupedByNode.forEach(clauses => {
-    clauses.forEach(clause => {
-      if (!clause.node || !clause.node.parentNode) return;
-
-      const success = highlightSingleClause(clause);
-
-      if (success && clause.highlightElement) {
-        clause.node =
-          clause.highlightElement.nextSibling ||
-          clause.highlightElement.previousSibling ||
-          clause.node;
-      }
-    });
+  groupedByNode.forEach((clauses, node) => {
+    highlightNodeClauses(node, clauses);
   });
 
   updateHighlightVisibility(window.highlightsVisible);

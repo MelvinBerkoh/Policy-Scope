@@ -49,23 +49,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return;
   }
 
-  if (request.action === "scrollToClause") {
-    const match = activeDetectedClauses.find(c => c.text === request.text);
+if (request.action === "scrollToClause") {
+  const match = activeDetectedClauses.find(c => c.text === request.text);
 
-    if (match?.highlightElement) {
-      match.highlightElement.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-    } else if (match?.node?.parentElement) {
-      match.node.parentElement.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-    }
-
+  if (match?.highlightElement) {
+    match.highlightElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+    sendResponse({ found: true });
     return;
   }
+
+  if (match?.node?.parentElement) {
+    match.node.parentElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+    sendResponse({ found: true });
+    return;
+  }
+
+  sendResponse({ found: false });
+  return;
+}
 
   if (request.action === "analyzeClause") {
     chrome.runtime.sendMessage(
