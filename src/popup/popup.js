@@ -14,7 +14,7 @@ const labelMap = {
   liability_limits: "Liability Limits",
   arbitration_disputes: "Dispute Resolution",
   terms_changes: "Terms Changes",
-  account_termination: "Account Termination",
+  account_termination: "Account & Access",
   third_party_services: "Third-Party Services",
   user_content_license: "User Content Rights",
   marketing_communications: "Marketing Communications",
@@ -141,6 +141,15 @@ function getSubcategoryDescription(type, count) {
   return descriptions[type] || `${count} flagged ${clauseWord} in this category.`;
 }
 
+function renderEmptyState(container, title, text) {
+  container.innerHTML = `
+    <div class="emptyState">
+      <div class="emptyStateTitle">${title}</div>
+      <div class="emptyStateText">${text}</div>
+    </div>
+  `;
+}
+
 function showView(viewName) {
   const mainView = document.getElementById("mainView");
   const subcategoriesView = document.getElementById("subcategoriesView");
@@ -162,9 +171,18 @@ function renderMain() {
   const grouped = groupDetectionsByBigCategory(globalDetections);
   results.innerHTML = "";
 
-  Object.entries(grouped).forEach(([bigCategory, items]) => {
-    if (!items.length) return;
+  const visibleGroups = Object.entries(grouped).filter(([, items]) => items.length > 0);
 
+  if (!visibleGroups.length) {
+    renderEmptyState(
+      results,
+      "No flagged categories",
+      "No enabled Big 8 categories were detected on this page."
+    );
+    return;
+  }
+
+  visibleGroups.forEach(([bigCategory, items]) => {
     const div = document.createElement("div");
     div.className = "card";
     div.style.borderLeft = `4px solid ${bigCategoryColors[bigCategory] || "#d1d5db"}`;
@@ -198,8 +216,20 @@ function showSubcategories(bigCategory, items) {
   container.innerHTML = "";
 
   const groupedByType = groupDetectionsByType(items);
+  const entries = Object.entries(groupedByType);
 
-  Object.entries(groupedByType).forEach(([type, clauses]) => {
+  if (!entries.length) {
+    renderEmptyState(
+      container,
+      "No subcategories found",
+      "This Big 8 category currently has no matching subcategories on this page."
+    );
+    lastView = "main";
+    showView("subcategories");
+    return;
+  }
+
+  entries.forEach(([type, clauses]) => {
     const card = document.createElement("div");
     card.className = "subcategoryCard";
     card.style.borderLeft = `4px solid ${bigCategoryColors[bigCategory] || "#d1d5db"}`;
@@ -235,6 +265,16 @@ function showClauseDetails(type, items) {
   detailTitle.innerText = formatLabel(type).toUpperCase();
   container.innerHTML = "";
 
+  if (!items.length) {
+    renderEmptyState(
+      container,
+      "No clauses found",
+      "There are no flagged clauses available for this subcategory."
+    );
+    showView("details");
+    return;
+  }
+
   items.forEach(item => {
     const div = document.createElement("div");
     div.className = "detailCard";
@@ -252,6 +292,8 @@ function showClauseDetails(type, items) {
         <button class="expandBtn">Show Full Clause</button>
         <button class="locateBtn">Locate</button>
       </div>
+
+      <div class="locateStatus" style="display: none;"></div>
     `;
 
     const summaryEl = div.querySelector(".summary");
@@ -260,6 +302,7 @@ function showClauseDetails(type, items) {
     const expandBtn = div.querySelector(".expandBtn");
     const locateBtn = div.querySelector(".locateBtn");
     const summaryToggleBtn = div.querySelector(".summaryToggleBtn");
+    const locateStatus = div.querySelector(".locateStatus");
 
     chrome.runtime.sendMessage(
       {
@@ -306,10 +349,27 @@ function showClauseDetails(type, items) {
       chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
         if (!tabs[0]?.id) return;
 
-        chrome.tabs.sendMessage(tabs[0].id, {
-          action: "scrollToClause",
-          text: item.text
-        });
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          {
+            action: "scrollToClause",
+            text: item.text
+          },
+          response => {
+            if (chrome.runtime.lastError) {
+              locateStatus.innerText = "Unable to locate clause on the page.";
+              locateStatus.style.display = "block";
+              return;
+            }
+
+            if (response && response.found) {
+              locateStatus.style.display = "none";
+            } else {
+              locateStatus.innerText = "Clause could not be located on the current page view.";
+              locateStatus.style.display = "block";
+            }
+          }
+        );
       });
     };
 

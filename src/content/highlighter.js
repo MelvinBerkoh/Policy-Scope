@@ -1,96 +1,207 @@
 window.highlightsVisible = true;
 window.highlightedSpans = [];
-window.currentHighlightColors = null;
+window.currentPolicyScopeSettings = null;
 
-const DEFAULT_BIG_CATEGORY_COLORS = {
-  "Data Collection": "#22c55e",
-  "Data Sharing": "#22c55e",
-  "Billing & Subscriptions": "#f59e0b",
-  "Legal & Disputes": "#ef4444",
-  "Account & Access": "#6366f1",
-  "Content & User Rights": "#6366f1",
-  "Policy Changes & Communication": "#6366f1",
-  "Age Restrictions": "#eab308"
+const DEFAULT_POLICY_SCOPE_SETTINGS = {
+  highlightColors: {
+    "Data Collection": "#22c55e",
+    "Data Sharing": "#22c55e",
+    "Billing & Subscriptions": "#f59e0b",
+    "Legal & Disputes": "#ef4444",
+    "Account & Access": "#6366f1",
+    "Content & User Rights": "#6366f1",
+    "Policy Changes & Communication": "#6366f1",
+    "Age Restrictions": "#eab308"
+  },
+  highlightStyle: "underline",
+  showFloatingBadge: true,
+  highlightsEnabledByDefault: true,
+  enabledBigCategories: {
+    "Data Collection": true,
+    "Data Sharing": true,
+    "Billing & Subscriptions": true,
+    "Legal & Disputes": true,
+    "Account & Access": true,
+    "Content & User Rights": true,
+    "Policy Changes & Communication": true,
+    "Age Restrictions": true
+  }
 };
 
 function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function getStoredHighlightColors() {
+function mergePolicyScopeSettings(savedSettings = {}) {
+  return {
+    ...DEFAULT_POLICY_SCOPE_SETTINGS,
+    ...savedSettings,
+    highlightColors: {
+      ...DEFAULT_POLICY_SCOPE_SETTINGS.highlightColors,
+      ...(savedSettings.highlightColors || {})
+    },
+    enabledBigCategories: {
+      ...DEFAULT_POLICY_SCOPE_SETTINGS.enabledBigCategories,
+      ...(savedSettings.enabledBigCategories || {})
+    }
+  };
+}
+
+function getPolicyScopeSettings() {
   return new Promise(resolve => {
-    chrome.storage.sync.get(["highlightColors"], result => {
-      resolve({
-        ...DEFAULT_BIG_CATEGORY_COLORS,
-        ...(result.highlightColors || {})
-      });
+    chrome.storage.sync.get(["policyScopeSettings"], result => {
+      resolve(mergePolicyScopeSettings(result.policyScopeSettings));
     });
   });
 }
 
+function hexToRgba(hex, alpha = 0.16) {
+  const clean = hex.replace("#", "");
+  const value = clean.length === 3
+    ? clean.split("").map(char => char + char).join("")
+    : clean;
+
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function getBorderColorForClause(clause) {
-  const colors = window.currentHighlightColors || DEFAULT_BIG_CATEGORY_COLORS;
-  return colors[clause.bigCategory] || "#94a3b8";
+  const settings = window.currentPolicyScopeSettings || DEFAULT_POLICY_SCOPE_SETTINGS;
+  return settings.highlightColors[clause.bigCategory] || "#94a3b8";
 }
 
 function applyHighlightStyles(span, borderColor, clause) {
-  span.style.backgroundColor = "transparent";
-  span.style.borderBottom = `2px solid ${borderColor}`;
+  const settings = window.currentPolicyScopeSettings || DEFAULT_POLICY_SCOPE_SETTINGS;
+  const style = settings.highlightStyle || "underline";
+
   span.style.borderRadius = "2px";
   span.style.padding = "0 1px";
   span.style.boxDecorationBreak = "clone";
   span.style.webkitBoxDecorationBreak = "clone";
+
+  if (style === "background") {
+    span.style.borderBottom = "2px solid transparent";
+    span.style.backgroundColor = hexToRgba(borderColor, 0.18);
+  } else if (style === "both") {
+    span.style.borderBottom = `2px solid ${borderColor}`;
+    span.style.backgroundColor = hexToRgba(borderColor, 0.14);
+  } else {
+    span.style.borderBottom = `2px solid ${borderColor}`;
+    span.style.backgroundColor = "transparent";
+  }
+
   span.dataset.originalBorderColor = borderColor;
+  span.dataset.originalBackgroundColor =
+    style === "background" || style === "both"
+      ? hexToRgba(borderColor, style === "background" ? 0.18 : 0.14)
+      : "transparent";
   span.dataset.bigCategory = clause.bigCategory || "";
   span.dataset.subcategory = clause.type || "";
   span.title = `${clause.bigCategory || "PolicyScope"}${clause.type ? ` • ${clause.type.replaceAll("_", " ")}` : ""}`;
 }
 
-function highlightSingleClause(clause) {
-  const node = clause.node;
-  if (!node || !node.parentNode || !clause.text) return false;
+function setSpanVisualState(span, isVisible) {
+  const settings = window.currentPolicyScopeSettings || DEFAULT_POLICY_SCOPE_SETTINGS;
+  const style = settings.highlightStyle || "underline";
+  const categoryEnabled = settings.enabledBigCategories[span.dataset.bigCategory] !== false;
 
-  const fullText = node.textContent;
-  const sentence = clause.text.trim();
-  if (!fullText || !sentence) return false;
-
-  const escapedSentence = escapeRegExp(sentence);
-  const match = fullText.match(new RegExp(escapedSentence));
-  if (!match || typeof match.index !== "number") return false;
-
-  const start = match.index;
-  const end = start + sentence.length;
-
-  const beforeText = fullText.slice(0, start);
-  const matchText = fullText.slice(start, end);
-  const afterText = fullText.slice(end);
-
-  const fragment = document.createDocumentFragment();
-
-  if (beforeText) {
-    fragment.appendChild(document.createTextNode(beforeText));
+  if (!isVisible || !categoryEnabled) {
+    span.style.borderBottomColor = "transparent";
+    span.style.backgroundColor = "transparent";
+    return;
   }
 
-  const span = document.createElement("span");
-  const borderColor = getBorderColorForClause(clause);
-  applyHighlightStyles(span, borderColor, clause);
-  span.textContent = matchText;
-  fragment.appendChild(span);
+  if (style === "background") {
+    span.style.borderBottomColor = "transparent";
+    span.style.backgroundColor = span.dataset.originalBackgroundColor || "transparent";
+  } else if (style === "both") {
+    span.style.borderBottomColor = span.dataset.originalBorderColor || "transparent";
+    span.style.backgroundColor = span.dataset.originalBackgroundColor || "transparent";
+  } else {
+    span.style.borderBottomColor = span.dataset.originalBorderColor || "transparent";
+    span.style.backgroundColor = "transparent";
+  }
+}
 
-  if (afterText) {
-    fragment.appendChild(document.createTextNode(afterText));
+function buildNonOverlappingMatches(fullText, clauses) {
+  const rawMatches = [];
+
+  clauses.forEach(clause => {
+    const sentence = clause.text?.trim();
+    if (!sentence) return;
+
+    const regex = new RegExp(escapeRegExp(sentence), "g");
+    let match;
+
+    while ((match = regex.exec(fullText)) !== null) {
+      rawMatches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        text: match[0],
+        clause
+      });
+    }
+  });
+
+  rawMatches.sort((a, b) => {
+    if (a.start !== b.start) return a.start - b.start;
+    return (b.end - b.start) - (a.end - a.start);
+  });
+
+  const accepted = [];
+  let lastEnd = -1;
+
+  rawMatches.forEach(match => {
+    if (match.start >= lastEnd) {
+      accepted.push(match);
+      lastEnd = match.end;
+    }
+  });
+
+  return accepted;
+}
+
+function highlightNodeClauses(node, clauses) {
+  if (!node || !node.parentNode || !clauses.length) return;
+
+  const fullText = node.textContent;
+  if (!fullText) return;
+
+  const matches = buildNonOverlappingMatches(fullText, clauses);
+  if (!matches.length) return;
+
+  const fragment = document.createDocumentFragment();
+  let cursor = 0;
+
+  matches.forEach(match => {
+    if (match.start > cursor) {
+      fragment.appendChild(document.createTextNode(fullText.slice(cursor, match.start)));
+    }
+
+    const span = document.createElement("span");
+    const borderColor = getBorderColorForClause(match.clause);
+    applyHighlightStyles(span, borderColor, match.clause);
+    span.textContent = fullText.slice(match.start, match.end);
+
+    match.clause.highlightElement = span;
+    window.highlightedSpans.push(span);
+    fragment.appendChild(span);
+
+    cursor = match.end;
+  });
+
+  if (cursor < fullText.length) {
+    fragment.appendChild(document.createTextNode(fullText.slice(cursor)));
   }
 
   node.parentNode.replaceChild(fragment, node);
-
-  clause.highlightElement = span;
-  window.highlightedSpans.push(span);
-
-  return true;
 }
 
 async function highlightClauses(detectedClauses) {
-  window.currentHighlightColors = await getStoredHighlightColors();
+  window.currentPolicyScopeSettings = await getPolicyScopeSettings();
   window.highlightedSpans = [];
 
   const groupedByNode = new Map();
@@ -103,24 +214,11 @@ async function highlightClauses(detectedClauses) {
     groupedByNode.get(clause.node).push(clause);
   });
 
-  groupedByNode.forEach(clauses => {
-    clauses.forEach(clause => {
-      if (!clause.node || !clause.node.parentNode) return;
-
-      const success = highlightSingleClause(clause);
-
-      if (success && clause.highlightElement) {
-        clause.node =
-          clause.highlightElement.nextSibling ||
-          clause.highlightElement.previousSibling ||
-          clause.node;
-      }
-    });
+  groupedByNode.forEach((clauses, node) => {
+    highlightNodeClauses(node, clauses);
   });
 
-  if (!window.highlightsVisible) {
-    updateHighlightVisibility(false);
-  }
+  updateHighlightVisibility(window.highlightsVisible);
 }
 
 function updateHighlightVisibility(isVisible) {
@@ -131,16 +229,12 @@ function updateHighlightVisibility(isVisible) {
   }
 
   window.highlightedSpans.forEach(span => {
-    span.style.borderBottomColor = isVisible
-      ? span.dataset.originalBorderColor
-      : "transparent";
-    span.style.backgroundColor = "transparent";
+    setSpanVisualState(span, isVisible);
   });
 }
 
-async function refreshHighlightColors() {
-  const colors = await getStoredHighlightColors();
-  window.currentHighlightColors = colors;
+async function refreshPolicyScopeSettingsOnPage() {
+  window.currentPolicyScopeSettings = await getPolicyScopeSettings();
 
   if (!window.highlightedSpans || window.highlightedSpans.length === 0) {
     return;
@@ -148,15 +242,30 @@ async function refreshHighlightColors() {
 
   window.highlightedSpans.forEach(span => {
     const bigCategory = span.dataset.bigCategory;
-    const newColor = colors[bigCategory] || "#94a3b8";
+    const newColor =
+      window.currentPolicyScopeSettings.highlightColors[bigCategory] || "#94a3b8";
+
     span.dataset.originalBorderColor = newColor;
-    span.style.borderBottomColor = window.highlightsVisible ? newColor : "transparent";
+
+    if (window.currentPolicyScopeSettings.highlightStyle === "background") {
+      span.dataset.originalBackgroundColor = hexToRgba(newColor, 0.18);
+    } else if (window.currentPolicyScopeSettings.highlightStyle === "both") {
+      span.dataset.originalBackgroundColor = hexToRgba(newColor, 0.14);
+    } else {
+      span.dataset.originalBackgroundColor = "transparent";
+    }
+
+    setSpanVisualState(span, window.highlightsVisible);
   });
 }
 
-function createPolicyScopeBadge(count) {
+function removePolicyScopeBadge() {
   const existing = document.getElementById("policyScopeBadge");
   if (existing) existing.remove();
+}
+
+function createPolicyScopeBadge(count) {
+  removePolicyScopeBadge();
 
   const badge = document.createElement("button");
   badge.id = "policyScopeBadge";
